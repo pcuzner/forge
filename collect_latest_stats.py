@@ -30,8 +30,7 @@ c = conn.cursor()
 
 # Create the SQLite3 table to store the info, if it's not already present
 sql = ('CREATE TABLE IF NOT EXISTS social_stats '
-       '(project TEXT, time_stamp TEXT, watchers INTEGER, stars INTEGER, '
-       'forks INTEGER)')
+       '(project TEXT, time_stamp TEXT, watchers INTEGER, stars INTEGER, forks INTEGER)')
 c.execute(sql)
 conn.commit()
 
@@ -48,27 +47,18 @@ for project in config.sections():
         print '  Status code {0} : {1}'.format(api_page.status_code)
     json_data = json.loads(api_page.text)
 
-    # Extract the number of watchers
+    # Extract the number of watchers, stars, and forks
     watchers = json_data['watchers']
-
-    # Extract the number of stars
     stars = json_data['stargazers_count']
-
-    # Extract the number of forks
     forks = json_data['forks_count']
 
     # Print the results to stdout
     if debug:
-        print 'watchers: {0}\tstars: {1}\tforks: {2}'.format(watchers,
-                                                             stars, forks)
+        print 'watchers: {0}\tstars: {1}\tforks: {2}'.format(watchers, stars, forks)
 
     # Add the results to the database
-    sql = ('INSERT INTO social_stats '
-           '(project, time_stamp, watchers, stars, forks) '
-           'VALUES '
-           "('{0}', date('now'), '{1}', '{2}', '{3}')").format(project,
-                                                               watchers,
-                                                               stars, forks)
+    sql = ('INSERT INTO social_stats (project, time_stamp, watchers, stars, forks) VALUES '
+           "('{0}', date('now'), '{1}', '{2}', '{3}')").format(project, watchers, stars, forks)
     c.execute(sql)
     conn.commit()
 
