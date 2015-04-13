@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """Collect the latest social stats for Gluster projects
 
-Grabs watchers, stars, forks, and # of commits per day.
-Needs code added to grab total # of downloads per day (when available).
+Grabs watchers, stars, forks, # of commits per day, and total number of downloads (ever).
 
 Requires the SQLite3 Python module
 """
@@ -63,10 +62,30 @@ for project in config.sections():
     commits_data = json.loads(commits_page.text)
     commits_count = len(commits_data)
 
+    # Retrieve the downloads page for this project
+    download_counter = 0
+    dl_url = '{0}/releases'.format(api_url)
+    dl_page = requests.get(dl_url, verify=True)
+    if dl_page.status_code != 200:
+        print 'Error retrieving downloads count page {0}'.format(dl_url)
+        print '  Status code {0}'.format(dl_page.status_code)
+        sys.exit(3)
+    dl_data = json.loads(dl_page.text)
+
+    # Note - For each project there is an outer loop of "releases" (eg v3.6.0), with an inner loop of "assets" inside
+    # each release (with each asset having it's own download counter). eg: an .exe and a .dmg might be two assets in
+    # the same v3.6.0 release.  The .exe might have 10,000 downloads, and the .dmg might have 3,000.
+
+    # Work out how many downloads have occurred (ever) for the project
+    if len(dl_data) > 0:
+        for release in dl_data:
+            for asset in release['assets']:
+                download_counter += asset['download_count']
+
     # Print the results to stdout
     if debug:
-        print '{0} - commits: {1}\twatchers: {2}\tstars: {3}\tforks: {4}\n'.format(project, commits_count,
-                                                                                   watchers, stars, forks)
+        print ('{0} - commits: {1}\twatchers: {2}\tstars: {3}\tforks: {4}\t'
+               'downloads: {5}\n'.format(project, commits_count, watchers, stars, forks, download_counter))
 
     # Add the results to the database
     sql = ('INSERT INTO social_stats (project, time_stamp, watchers, stars, forks, commits) VALUES '
