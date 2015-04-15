@@ -10,7 +10,6 @@ import os, os.path, sys, ConfigParser
 import sqlite3
 import requests
 import json
-from datetime import datetime
 
 # Enable this to have the results printed to stdout
 debug = True
@@ -33,6 +32,13 @@ sql = ('CREATE TABLE IF NOT EXISTS social_stats (project TEXT, time_stamp TEXT, 
 c.execute(sql)
 conn.commit()
 
+# Retrieve today and yesterday (as formatted strings) from the database
+sql = "SELECT strftime('%Y-%m-%dT%H:%M:%S', 'now'), strftime('%Y-%m-%dT%H:%M:%S', 'now', '-1 day')"
+c.execute(sql)
+sql_results = c.fetchall()
+today = sql_results[0][0]
+yesterday = sql_results[0][1]
+
 # Loop through the projects in the config file
 for project in config.sections():
 
@@ -52,8 +58,8 @@ for project in config.sections():
     stars = api_data['stargazers_count']
     forks = api_data['forks_count']
 
-    # Count the # of commits since midnight
-    commits_url = '{0}/commits?since={1}T00:00:00Z'.format(api_url, datetime.now().date().isoformat())
+    # Count the # of commits in the last 24 hours
+    commits_url = '{0}/commits?since={1}Z'.format(api_url, yesterday)
     commits_page = requests.get(commits_url, verify=True)
     if commits_page.status_code != 200:
         print 'Error retrieving Commit count page {0}'.format(commits_url)
@@ -76,7 +82,7 @@ for project in config.sections():
     # each release (with each asset having it's own download counter). eg: an .exe and a .dmg might be two assets in
     # the same v3.6.0 release.  The .exe might have 10,000 downloads, and the .dmg might have 3,000.
 
-    # Work out how many downloads have occurred (ever) for the project
+    # Count how many downloads have occurred (ever) for the project
     if len(dl_data) > 0:
         for release in dl_data:
             for asset in release['assets']:
@@ -84,12 +90,12 @@ for project in config.sections():
 
     # Print the results to stdout
     if debug:
-        print ('{0} - commits: {1}\twatchers: {2}\tstars: {3}\tforks: {4}\t'
+        print ('{0}\n\tcommits: {1}\twatchers: {2}\tstars: {3}\tforks: {4}\t'
                'downloads: {5}\n'.format(project, commits_count, watchers, stars, forks, download_counter))
 
     # Add the results to the database
     sql = ('INSERT INTO social_stats (project, time_stamp, watchers, stars, forks, commits) VALUES '
-           "('{0}', date('now'), '{1}', '{2}', '{3}', '{4}')").format(project, watchers, stars, forks, commits_count)
+           "('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')").format(project, today, watchers, stars, forks, commits_count)
     c.execute(sql)
     conn.commit()
 

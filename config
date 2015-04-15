@@ -2,3 +2,5 @@
 [gluster/distaf]
 [gluster/glusterfs-hadoop]
 [gluster/glusterweb]
+[gluster/forge]
+[gluster/planet-gluster]
