@@ -55,7 +55,7 @@ for project in config.sections():
     api_data = json.loads(api_page.text)
 
     # Extract the number of watchers, stars, and forks
-    watchers = api_data['watchers']
+    watchers = api_data['subscribers_count']
     stars = api_data['stargazers_count']
     forks = api_data['forks_count']
 
