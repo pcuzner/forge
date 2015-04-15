@@ -95,8 +95,9 @@ for project in config.sections():
                'downloads: {5}\n'.format(project, commits_count, watchers, stars, forks, download_counter))
 
     # Add the results to the database
-    sql = ('INSERT INTO social_stats (project, time_stamp, watchers, stars, forks, commits) VALUES '
-           "('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')").format(project, today, watchers, stars, forks, commits_count)
+    sql = ('INSERT INTO social_stats (project, time_stamp, watchers, stars, forks, commits, downloads) VALUES '
+           "('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')").format(project, today, watchers, stars, forks,
+                                                                       commits_count, download_counter)
     c.execute(sql)
     conn.commit()
 
