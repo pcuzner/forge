@@ -15,12 +15,13 @@ import json
 debug = True
 
 # Read the GitHub projects from the ./config file
-config_file_path = 'config'
+base_path = os.path.dirname(os.path.realpath(__file__))
+config_file_path = os.path.join(base_path, 'config')
 config = ConfigParser.SafeConfigParser()
 config.read(config_file_path)
 
-# Open the ./stats.db SQLite3 database
-db_path = 'db/project_stats.db'
+# Open the ./db/project_stats.db SQLite3 database
+db_path = os.path.join(base_path, 'db/project_stats.db')
 conn = sqlite3.connect(db_path)
 
 # Connect to the database
