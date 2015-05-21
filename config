@@ -12,4 +12,5 @@
 [pcuzner/gluster-deploy]
 [pcuzner/gluster-monitor]
 [pcuzner/gstatus]
+[pcuzner/vm2brick]
 [purpleidea/puppet-gluster]
